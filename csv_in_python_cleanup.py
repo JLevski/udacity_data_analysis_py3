@@ -64,7 +64,6 @@ for submission in project_submissions:
 #                 Analysis                 #
 ############################################
 
-
 # return the number of rows and unique accounts in each csv file
 def get_unique_students(data):
     unique_students = set()
@@ -82,7 +81,8 @@ engagement_num_unique_students = len(get_unique_students(daily_engagement))
 submission_num_rows = len(project_submissions)
 submission_num_unique_students = len(get_unique_students(project_submissions))
 
-for enrollment in enrollments:
-    if enrollment['account_key'] not in get_unique_students(daily_engagement):
-        print(enrollment)
+only_enrolled = unique_enrolled_students.difference(unique_engagement_students)
+for student in enrollments:
+    if student['account_key'] in only_enrolled:
+        print(student)
         break
