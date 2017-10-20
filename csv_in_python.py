@@ -54,7 +54,7 @@ for engagement_record in daily_engagement:
     engagement_record['account_key'] = engagement_record['acct']
     del[engagement_record['acct']]
 
-print(daily_engagement[0]['account_key'])
+# print(daily_engagement[0]['account_key'])
 
 for submission in project_submissions:
     submission['completion_date'] = parse_date(submission['completion_date'])
@@ -82,7 +82,44 @@ engagement_num_unique_students = len(get_unique_students(daily_engagement))
 submission_num_rows = len(project_submissions)
 submission_num_unique_students = len(get_unique_students(project_submissions))
 
+num_prob_records = 0
 for enrollment in enrollments:
-    if enrollment['account_key'] not in get_unique_students(daily_engagement):
-        print(enrollment)
-        break
+    if (enrollment['account_key'] not in get_unique_students(daily_engagement)
+            and enrollment['join_date'] != enrollment['cancel_date']):
+        # print(enrollment)
+        num_prob_records += 1
+
+# Create a set of the account keys for all Udacity test accounts
+udacity_test_accounts = set()
+for enrollment in enrollments:
+    if enrollment['is_udacity']:
+        udacity_test_accounts.add(enrollment['account_key'])
+
+
+def remove_udacity_accounts(data):
+    non_udacity_data = []
+    for data_point in data:
+        if data_point['account_key'] not in udacity_test_accounts:
+            non_udacity_data.append(data_point)
+    return non_udacity_data
+
+
+# Remove Udacity test accounts from all three tables
+non_udacity_enrollments = remove_udacity_accounts(enrollments)
+non_udacity_engagement = remove_udacity_accounts(daily_engagement)
+non_udacity_submissions = remove_udacity_accounts(project_submissions)
+
+# Dictionary of students not cancelled yet, or lasted > 7 days
+paid_students = {}
+for enrollment in non_udacity_enrollments:
+    if (enrollment['days_to_cancel'] is None or
+            enrollment['days_to_cancel'] > 7):
+        account_key = enrollment['account_key']
+        enrollment_date = enrollment['join_date']
+        if (account_key not in paid_students or enrollment_date >
+                paid_students[account_key]):
+            paid_students[account_key] = enrollment_date
+
+print(len(paid_students))
+
+# engagement records for paid students in their first week
