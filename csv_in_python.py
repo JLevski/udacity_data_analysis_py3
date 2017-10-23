@@ -1,6 +1,7 @@
 import csv
-import os
 from datetime import datetime as dt
+from collections import defaultdict
+import numpy as np
 
 enrollments_filename = 'enrollments.csv'
 engagement_filename = 'daily_engagement.csv'
@@ -126,7 +127,7 @@ for enrollment in non_udacity_enrollments:
 # engagement records for paid students in their first week
 def within_one_week(join_date, engagement_date):
     time_delta = engagement_date - join_date
-    return time_delta.days < 7
+    return time_delta.days >= 0 and time_delta.days < 7
 
 
 def remove_free_trial_cancels(data):
@@ -150,4 +151,39 @@ for engagement_record in paid_engagement:
     if within_one_week(join_date, engagement_record_date):
         paid_engagement_in_first_week.append(engagement_record)
 
-print(len(paid_engagement_in_first_week))
+# print(len(paid_engagement_in_first_week))
+
+# Create a dictionary of engagement grouped by student.
+engagement_by_account = defaultdict(list)
+for engagement_record in paid_engagement_in_first_week:
+    account_key = engagement_record['account_key']
+    engagement_by_account[account_key].append(engagement_record)
+
+# Create a dictionary with the total minutes each student spent in the
+# classroom during the first week.
+total_minutes_by_account = {}
+for account_key, engagement_for_student in engagement_by_account.items():
+    # dict.items returns the list of key-value pairs in the dictionary
+    total_minutes = 0
+    for engagement_record in engagement_for_student:
+        total_minutes += engagement_record['total_minutes_visited']
+    total_minutes_by_account[account_key] = total_minutes
+
+total_minutes = list(total_minutes_by_account.values())
+# print("Mean: ", np.mean(total_minutes))
+# print("Standard Deviation: ", np.std(total_minutes))
+# print("Maximum: ", np.max(total_minutes))
+# print("Minimum: ", np.min(total_minutes))
+
+# understand why max minutes is so high
+student_with_max_minutes = None
+max_minutes = 0
+
+for student, total_minutes in total_minutes_by_account.items():
+    if total_minutes > max_minutes:
+        max_minutes = total_minutes
+        student_with_max_minutes = student
+
+for engagement_record in paid_engagement_in_first_week:
+    if engagement_record['account_key'] == student_with_max_minutes:
+        print(engagement_record)
