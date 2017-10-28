@@ -153,37 +153,59 @@ for engagement_record in paid_engagement:
 
 # print(len(paid_engagement_in_first_week))
 
-# Create a dictionary of engagement grouped by student.
-engagement_by_account = defaultdict(list)
-for engagement_record in paid_engagement_in_first_week:
-    account_key = engagement_record['account_key']
-    engagement_by_account[account_key].append(engagement_record)
 
-# Create a dictionary with the total minutes each student spent in the
-# classroom during the first week.
-total_minutes_by_account = {}
-for account_key, engagement_for_student in engagement_by_account.items():
-    # dict.items returns the list of key-value pairs in the dictionary
-    total_minutes = 0
-    for engagement_record in engagement_for_student:
-        total_minutes += engagement_record['total_minutes_visited']
-    total_minutes_by_account[account_key] = total_minutes
+# Create a dictionary grouped by studenta key (e.g. a student).
+def group_data(data, key_name):
+    grouped_data = defaultdict(list)
+    for data_point in data:
+        key = data_point[key_name]
+        grouped_data[key].append(data_point)
+    return grouped_data
 
-total_minutes = list(total_minutes_by_account.values())
-# print("Mean: ", np.mean(total_minutes))
-# print("Standard Deviation: ", np.std(total_minutes))
-# print("Maximum: ", np.max(total_minutes))
-# print("Minimum: ", np.min(total_minutes))
+
+# Aggregate different variables (minutes, lessons) by key (e.g. a student)
+def sum_grouped_items(grouped_data, field_name):
+    summed_data = {}
+    for key, data in grouped_data.items():
+        sum_data = 0
+        for data_point in data:
+            sum_data += data_point[field_name]
+        summed_data[key] = sum_data
+    return summed_data
+
+
+# Output mean, standard deviation, max and min for a data set
+def stat_outputs(data):
+    grouped_data = list(data.values())
+    print("Mean: ", np.mean(grouped_data))
+    print("Standard Deviation: ", np.std(grouped_data))
+    print("Maximum: ", np.max(grouped_data))
+    print("Minimum: ", np.min(grouped_data))
+
+
+engagement_by_account = group_data(paid_engagement_in_first_week,
+                                   'account_key')
+# total_lessons_by_account = sum_grouped_items(engagement_by_account,
+#                                              'lessons_completed')
+# print("Statistical outputs for total_lessons_by_account")
+# print(stat_outputs(total_lessons_by_account))
+#
+# total_minutes_by_account = sum_grouped_items(engagement_by_account,
+#                                              'total_minutes_visited')
+# print("Statistical outputs for total_minutes_by_account")
+# print(stat_outputs(total_minutes_by_account))
+
+
 
 # understand why max minutes is so high
-student_with_max_minutes = None
-max_minutes = 0
-
-for student, total_minutes in total_minutes_by_account.items():
-    if total_minutes > max_minutes:
-        max_minutes = total_minutes
-        student_with_max_minutes = student
-
-for engagement_record in paid_engagement_in_first_week:
-    if engagement_record['account_key'] == student_with_max_minutes:
-        print(engagement_record)
+# student_with_max_minutes = None
+# max_minutes = 0
+#
+# for student, total_minutes in total_minutes_by_account.items():
+#     if total_minutes > max_minutes:
+#         max_minutes = total_minutes
+#         student_with_max_minutes = student
+#
+# for engagement_record in paid_engagement_in_first_week:
+#     if engagement_record['account_key'] == student_with_max_minutes:
+#         print(engagement_record)
