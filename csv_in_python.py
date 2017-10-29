@@ -151,6 +151,13 @@ for engagement_record in paid_engagement:
     if within_one_week(join_date, engagement_record_date):
         paid_engagement_in_first_week.append(engagement_record)
 
+# create field to track whether student visited that day
+for engagement_record in paid_engagement:
+    if engagement_record['num_courses_visited'] > 0:
+        engagement_record['has_visited'] = 1
+    else:
+        engagement_record['has_visited'] = 0
+
 # print(len(paid_engagement_in_first_week))
 
 
@@ -195,7 +202,38 @@ engagement_by_account = group_data(paid_engagement_in_first_week,
 # print("Statistical outputs for total_minutes_by_account")
 # print(stat_outputs(total_minutes_by_account))
 
+days_visited_by_account = sum_grouped_items(engagement_by_account,
+                                            'has_visited')
+print("Statistical outputs for days_visited_by_account")
+print(stat_outputs(days_visited_by_account))
 
+# Create two lists of engagement data for paid students in the first week.
+# The first list should contain data for students who eventually pass the
+# subway project, and the second list should contain data for students
+# who do not.
+
+subway_project_lesson_keys = ['746169184', '3176718735']
+passing_grades = ['PASSED', 'DISTINCTION']
+
+pass_subway_project = set()
+passing_engagement = []
+non_passing_engagement = []
+
+for submission in paid_submissions:
+    if submission['lesson_key'] in subway_project_lesson_keys:
+        if submission['assigned_rating'] in passing_grades:
+            pass_subway_project.add(submission['account_key'])
+
+print(len(pass_subway_project))
+
+for engagement in paid_engagement_in_first_week:
+    if engagement['account_key'] in pass_subway_project:
+        passing_engagement.append(engagement)
+    else:
+        non_passing_engagement.append(engagement)
+
+print(len(passing_engagement))
+print(len(non_passing_engagement))
 
 # understand why max minutes is so high
 # student_with_max_minutes = None
