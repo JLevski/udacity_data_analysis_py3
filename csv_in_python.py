@@ -2,6 +2,7 @@ import csv
 from datetime import datetime as dt
 from collections import defaultdict
 import numpy as np
+import matplotlib.pyplot as plt
 
 enrollments_filename = 'enrollments.csv'
 engagement_filename = 'daily_engagement.csv'
@@ -142,6 +143,13 @@ paid_enrollments = remove_free_trial_cancels(non_udacity_enrollments)
 paid_engagement = remove_free_trial_cancels(non_udacity_engagement)
 paid_submissions = remove_free_trial_cancels(non_udacity_submissions)
 
+# create field to track whether student visited that day
+for engagement_record in paid_engagement:
+    if engagement_record['num_courses_visited'] > 0:
+        engagement_record['has_visited'] = 1
+    else:
+        engagement_record['has_visited'] = 0
+
 paid_engagement_in_first_week = []
 for engagement_record in paid_engagement:
     account_key = engagement_record['account_key']
@@ -150,13 +158,6 @@ for engagement_record in paid_engagement:
 
     if within_one_week(join_date, engagement_record_date):
         paid_engagement_in_first_week.append(engagement_record)
-
-# create field to track whether student visited that day
-for engagement_record in paid_engagement:
-    if engagement_record['num_courses_visited'] > 0:
-        engagement_record['has_visited'] = 1
-    else:
-        engagement_record['has_visited'] = 0
 
 # print(len(paid_engagement_in_first_week))
 
@@ -190,8 +191,21 @@ def stat_outputs(data):
     print("Minimum: ", np.min(grouped_data))
 
 
-engagement_by_account = group_data(paid_engagement_in_first_week,
-                                   'account_key')
+def histogram(*args):
+    if args is not None:
+        figure_count = 1
+        for data in args:
+            grouped_data = list(data.values())
+            plt.figure(figure_count)
+            plt.hist(grouped_data)
+            plt.show()
+            figure_count += 1
+    else:
+        print('please provide a dataset')
+
+
+# engagement_by_account = group_data(paid_engagement_in_first_week,
+#                                    'account_key')
 # total_lessons_by_account = sum_grouped_items(engagement_by_account,
 #                                              'lessons_completed')
 # print("Statistical outputs for total_lessons_by_account")
@@ -201,11 +215,11 @@ engagement_by_account = group_data(paid_engagement_in_first_week,
 #                                              'total_minutes_visited')
 # print("Statistical outputs for total_minutes_by_account")
 # print(stat_outputs(total_minutes_by_account))
-
-days_visited_by_account = sum_grouped_items(engagement_by_account,
-                                            'has_visited')
-print("Statistical outputs for days_visited_by_account")
-print(stat_outputs(days_visited_by_account))
+#
+# days_visited_by_account = sum_grouped_items(engagement_by_account,
+#                                             'has_visited')
+# print("Statistical outputs for days_visited_by_account")
+# print(stat_outputs(days_visited_by_account))
 
 # Create two lists of engagement data for paid students in the first week.
 # The first list should contain data for students who eventually pass the
@@ -224,7 +238,7 @@ for submission in paid_submissions:
         if submission['assigned_rating'] in passing_grades:
             pass_subway_project.add(submission['account_key'])
 
-print(len(pass_subway_project))
+# print(len(pass_subway_project))
 
 for engagement in paid_engagement_in_first_week:
     if engagement['account_key'] in pass_subway_project:
@@ -232,8 +246,56 @@ for engagement in paid_engagement_in_first_week:
     else:
         non_passing_engagement.append(engagement)
 
-print(len(passing_engagement))
-print(len(non_passing_engagement))
+# print(len(passing_engagement))
+# print(len(non_passing_engagement))
+
+passing_engagement_by_account = group_data(passing_engagement, 'account_key')
+non_passing_engagement_by_account = group_data(non_passing_engagement,
+                                               'account_key')
+
+total_pass_projects_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'projects_completed')
+total_pass_minutes_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'total_minutes_visited')
+total_pass_lessons_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'lessons_completed')
+pass_days_visited_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'has_visited')
+
+total_non_pass_projects_by_account = sum_grouped_items(
+    non_passing_engagement_by_account, 'projects_completed')
+total_non_pass_minutes_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'total_minutes_visited')
+total_non_pass_lessons_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'lessons_completed')
+non_pass_days_visited_by_account = sum_grouped_items(
+    passing_engagement_by_account, 'has_visited')
+
+# print("Statistical outputs for total_pass_projects_by_account")
+# print(stat_outputs(total_pass_projects_by_account))
+# print("Statistical outputs for total_non_pass_projects_by_account")
+# print(stat_outputs(total_non_pass_projects_by_account))
+#
+# print("Statistical outputs for total_pass_minutes_by_account")
+# print(stat_outputs(total_pass_minutes_by_account))
+# print("Statistical outputs for total_non_pass_minutes_by_account")
+# print(stat_outputs(total_non_pass_minutes_by_account))
+#
+# print("Statistical outputs for total_pass_lessons_by_account")
+# print(stat_outputs(total_pass_lessons_by_account))
+# print("Statistical outputs for total_non_pass_lessons_by_account")
+# print(stat_outputs(total_non_pass_lessons_by_account))
+#
+# print("Statistical outputs for pass_days_visited_by_account")
+# print(stat_outputs(pass_days_visited_by_account))
+# print("Statistical outputs for non_pass_days_visited_by_account")
+# print(stat_outputs(non_pass_days_visited_by_account))
+
+histogram(total_pass_minutes_by_account, total_non_pass_minutes_by_account,
+          total_pass_lessons_by_account, total_non_pass_lessons_by_account,
+          pass_days_visited_by_account, non_pass_days_visited_by_account)
+
+
 
 # understand why max minutes is so high
 # student_with_max_minutes = None
