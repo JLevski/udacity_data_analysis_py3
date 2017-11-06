@@ -3,6 +3,8 @@ from datetime import datetime as dt
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+import math
 
 enrollments_filename = 'enrollments.csv'
 engagement_filename = 'daily_engagement.csv'
@@ -182,24 +184,28 @@ def sum_grouped_items(grouped_data, field_name):
     return summed_data
 
 
-# Output mean, standard deviation, max and min for a data set
+# Output mean, standard deviation, max, min and length (count) for a data set
 def stat_outputs(data):
     grouped_data = list(data.values())
     print("Mean: ", np.mean(grouped_data))
     print("Standard Deviation: ", np.std(grouped_data))
     print("Maximum: ", np.max(grouped_data))
     print("Minimum: ", np.min(grouped_data))
+    print("Length: ", len(grouped_data))
 
 
 def histogram(*args):
     if args is not None:
-        figure_count = 1
+        n_rows = math.ceil(math.sqrt(len(args)))
+        n_cols = math.ceil(len(args) / n_rows)
+        sub_plot_count = 1
+        plt.figure()
         for data in args:
             grouped_data = list(data.values())
-            plt.figure(figure_count)
             plt.hist(grouped_data)
-            plt.show()
-            figure_count += 1
+            plt.subplot(n_rows, n_cols, sub_plot_count)
+            sub_plot_count += 1
+        plt.show()
     else:
         print('please provide a dataset')
 
@@ -265,11 +271,11 @@ pass_days_visited_by_account = sum_grouped_items(
 total_non_pass_projects_by_account = sum_grouped_items(
     non_passing_engagement_by_account, 'projects_completed')
 total_non_pass_minutes_by_account = sum_grouped_items(
-    passing_engagement_by_account, 'total_minutes_visited')
+    non_passing_engagement_by_account, 'total_minutes_visited')
 total_non_pass_lessons_by_account = sum_grouped_items(
-    passing_engagement_by_account, 'lessons_completed')
+    non_passing_engagement_by_account, 'lessons_completed')
 non_pass_days_visited_by_account = sum_grouped_items(
-    passing_engagement_by_account, 'has_visited')
+    non_passing_engagement_by_account, 'has_visited')
 
 # print("Statistical outputs for total_pass_projects_by_account")
 # print(stat_outputs(total_pass_projects_by_account))
@@ -291,6 +297,15 @@ non_pass_days_visited_by_account = sum_grouped_items(
 # print("Statistical outputs for non_pass_days_visited_by_account")
 # print(stat_outputs(non_pass_days_visited_by_account))
 
+# print(stat_outputs(total_non_pass_minutes_by_account))
+# plt.figure()
+# grouped_data = list(total_non_pass_minutes_by_account.values())
+# plt.hist(grouped_data, bins=20)
+# plt.xlabel('Number of minutes')
+# plt.title('Distribution of minutes spent in the first week for students who ' +
+#           'failed the subway project')
+# plt.show()
+# histogram(total_non_pass_minutes_by_account)
 histogram(total_pass_minutes_by_account, total_non_pass_minutes_by_account,
           total_pass_lessons_by_account, total_non_pass_lessons_by_account,
           pass_days_visited_by_account, non_pass_days_visited_by_account)
