@@ -38,9 +38,68 @@ df2.plot(ax=axes[1, 0])
 df3.plot(ax=axes[1, 1])
 
 fig.tight_layout()
-plt.show()
+# plt.show()
 
 plt.figure()
 plt.scatter(traffic_by_temp_precip['tempi'], traffic_by_temp_precip['precipi'],
             s=scaled_entries)
-plt.show()
+# plt.show()
+
+# Basic functionality with pandas
+
+
+# correlation between two variables
+def correlation(x, y):
+    x_std = (x - x.mean()) / x.std(ddof=0)
+    y_std = (y - y.mean()) / y.std(ddof=0)
+    return (x_std * y_std).mean()
+
+
+entries = nyc_subway_weather['ENTRIESn_hourly']
+cum_entries = nyc_subway_weather['ENTRIESn']
+rain = nyc_subway_weather['meanprecipi']
+temp = nyc_subway_weather['meantempi']
+
+print("Entries and rain: ", correlation(entries, rain))
+print("Entries and temp: ", correlation(entries, temp))
+print("Temp and rain: ", correlation(temp, rain))
+print("Entries and cumulative entries: ", correlation(entries, cum_entries))
+
+
+# calculating hourly entries and exits using cumulative figures
+def get_hourly_values(cumul, control):
+    hourly = (cumul - cumul.shift(1)).dropna()
+    control_hourly = (control).dropna()
+    return pd.concat([hourly, control_hourly], axis=1)
+
+
+print(get_hourly_values(cum_entries, entries))
+
+
+# set day of week
+def convert_weekday(weekday):
+    if weekday == 0:
+        return 'Monday'
+    elif weekday == 1:
+        return 'Tuesday'
+    elif weekday == 2:
+        return 'Tuesday'
+    elif weekday == 3:
+        return 'Tuesday'
+    elif weekday == 4:
+        return 'Tuesday'
+    elif weekday == 5:
+        return 'Tuesday'
+    elif weekday == 6:
+        return 'Tuesday'
+    else:
+        return 'Error'
+
+
+def convert_weekdays(weekdays):
+    return weekdays.applymap(convert_weekday)
+
+
+weekday_df = nyc_subway_weather[['UNIT', 'day_week']].set_index('UNIT')
+
+print(convert_weekdays(weekday_df))
