@@ -18,8 +18,8 @@ temperature_rounded = pd.DataFrame(nyc_subway_weather).round({'tempi': 0})
 temp = temperature_rounded.groupby('tempi')
 traffic_by_temp = temp.mean()[['ENTRIESn_hourly', 'EXITSn_hourly']]
 
-temp_and_precip = temperature_rounded.groupby(['tempi', 'precipi'], as_index=False)
-traffic_by_temp_precip = temp_and_precip.mean()
+temp_precip = temperature_rounded.groupby(['tempi', 'precipi'], as_index=False)
+traffic_by_temp_precip = temp_precip.mean()
 scaled_entries = (traffic_by_temp_precip['ENTRIESn_hourly'] /
                   traffic_by_temp_precip['ENTRIESn_hourly'].std())
 
@@ -83,15 +83,15 @@ def convert_weekday(weekday):
     elif weekday == 1:
         return 'Tuesday'
     elif weekday == 2:
-        return 'Tuesday'
+        return 'Wednesday'
     elif weekday == 3:
-        return 'Tuesday'
+        return 'Thursday'
     elif weekday == 4:
-        return 'Tuesday'
+        return 'Friday'
     elif weekday == 5:
-        return 'Tuesday'
+        return 'Saturday'
     elif weekday == 6:
-        return 'Tuesday'
+        return 'Sunday'
     else:
         return 'Error'
 
@@ -103,3 +103,19 @@ def convert_weekdays(weekdays):
 weekday_df = nyc_subway_weather[['UNIT', 'day_week']].set_index('UNIT')
 
 print(convert_weekdays(weekday_df))
+
+
+# apply works on each column rather than across the DF. This can return by
+# column results. Here return the second highest value in each column
+
+def second_largest_column(col):
+    sort_col = col.sort_values(ascending=False)
+    return sort_col.iloc[1]
+
+
+def second_largest(df):
+    return df.apply(second_largest_column)
+
+
+entries_and_exits = nyc_subway_weather[['ENTRIESn_hourly', 'EXITSn_hourly']]
+print(second_largest(entries_and_exits))
