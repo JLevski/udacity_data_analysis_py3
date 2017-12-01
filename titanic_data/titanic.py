@@ -28,11 +28,33 @@ titanic['age_range'] = pd.cut(titanic['Age'], bins=age_groups,
 age_range = titanic.groupby('age_range')
 survived_by_age = age_range.sum()['Survived'] / age_range.count()['Survived']
 
-print('Survived by class: \n', survived_by_class)
-print('Survived by sibling or spouse: \n', survived_by_sibsp)
-print('Survived by parent or child: \n', survived_by_parch)
-print('Survived by relative: \n', survived_by_relat)
-print('Survived by age range: \n', survived_by_age)
-# print('Survived by class: \n', survived_by_class)
+has_cabin = []
+cabin_fillna = titanic['Cabin'].fillna(0)
+for i in cabin_fillna:
+    if i == 0:
+        has_cabin.append('deck_life')
+    else:
+        has_cabin.append('has_cabin')
+titanic['has_cabin'] = has_cabin
+cabin_status = titanic.groupby('has_cabin')
+survived_by_cabin = (cabin_status.sum()['Survived'] /
+                     cabin_status.count()['Survived'])
 
-# fig, axes = plt.subplots(nrows=3, ncols=3)
+# print('Survived by class: \n', survived_by_class)
+# print('Survived by sibling or spouse: \n', survived_by_sibsp)
+# print('Survived by parent or child: \n', survived_by_parch)
+# print('Survived by relative: \n', survived_by_relat)
+# print('Survived by age range: \n', survived_by_age)
+# print('Survived by has a cabin: \n', survived_by_cabin)
+
+fig, axes = plt.subplots(nrows=2, ncols=3)
+
+survived_by_class.plot.bar(ax=axes[0, 0])
+survived_by_sibsp.plot(ax=axes[0, 1])
+survived_by_parch.plot(ax=axes[0, 2])
+survived_by_relat.plot(ax=axes[1, 0])
+survived_by_age.plot.bar(ax=axes[1, 1])
+survived_by_cabin.plot.bar(ax=axes[1, 2])
+
+fig.tight_layout()
+plt.show()
